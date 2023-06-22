@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRUD Operations with React</title>
+  <script src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/javascript">
+    const { useState } = React;
+
+    class Route {
+      constructor(route) {
+        this.route = route;
+        this.legs = [];
+      }
+
+      addLeg(leg) {
+        this.legs.push(leg);
+      }
+    }
+
+    function NLegs() {
+      const [routes, setRoutes] = useState([]);
+      const [newRoute, setNewRoute] = useState("");
+      const [legCount, setLegCount] = useState(0);
+      const [legs, setLegs] = useState([]);
+      const [totalCost, setTotalCost] = useState(0);
+
+      const handleInputChange = (event) => {
+  const { name, value } = event.target;
+  if (name === "newRoute") {
+    setNewRoute(value);
+  } else if (name === "legCount") {
+    setLegCount(parseInt(value));
+  } else if (name.startsWith("cityA") || name.startsWith("cityB") || name.startsWith("cost")) {
+    const legIndex = parseInt(name.slice(-1));
+    const propName = name.slice(0, -1);
+    setLegs((prevLegs) => {
+      const updatedLegs = [...prevLegs];
+      updatedLegs[legIndex] = { ...updatedLegs[legIndex], [propName]: value };
+      return updatedLegs;
+    });
+  }
+};
+
+
+      const handleAddLeg = () => {
+  setLegCount((prevLegCount) => prevLegCount + 1);
+  setLegs((prevLegs) => [...prevLegs, { cityA: "", cityB: "", cost: "" }]);
+};
+
+
+      const handleCreateRoute = () => {
+        const routeInstance = new Route(routes.length + 1);
+        legs.forEach((leg) => routeInstance.addLeg(leg));
+        setRoutes((prevRoutes) => [...prevRoutes, routeInstance]);
+        setNewRoute("");
+        setLegCount(0);
+        setLegs([]);
+      };
+
+      const handleDeleteRoute = (index) => {
+        setRoutes((prevRoutes) => {
+          const updatedRoutes = [...prevRoutes];
+          updatedRoutes.splice(index, 1);
+          return updatedRoutes;
+        });
+      };
+
+      const calculateTotalCost = () => {
+        let totalCost = 0;
+        routes.forEach((route) => {
+          route.legs.forEach((leg) => {
+            totalCost += parseFloat(leg.cost);
+          });
+        });
+        return totalCost;
+      };
+
+      const handleSubmit = (event) => {
+        event.preventDefault();
+        const totalCost = calculateTotalCost();
+        setTotalCost(totalCost);
+      };
+
+      return (
+        React.createElement("div", null,
+          React.createElement("h1", null, "CRUD Operations with React"),
+          React.createElement("form", { onSubmit: handleSubmit },
+            React.createElement("label", null,
+              "New Route:",
+              React.createElement("input", {
+                type: "text",
+                name: "newRoute",
+                value: newRoute,
+                onChange: handleInputChange
+              })
+            ),
+            React.createElement("br"),
+            React.createElement("label", null,
+              "Number of Legs:",
+              React.createElement("input", {
+                type: "number",
+                name: "legCount",
+                value: legCount,
+                onChange: handleInputChange
+              })
+            ),
+            React.createElement("br"),
+            Array.from({ length: legCount }, (_, index) => index).map((index) => (
+              React.createElement("div", { key: index },
+                React.createElement("label", null,
+                  "City A of Leg ", index + 1, ":",
+                  React.createElement("input", {
+                    type: "text",
+                    name: `cityA${index}`,
+                    value: legs[index]?.cityA || "",
+                    onChange: handleInputChange
+                  })
+                ),
+                React.createElement("br"),
+                React.createElement("label", null,
+                  "City B of Leg ", index + 1, ":",
+                  React.createElement("input", {
+                    type: "text",
+                    name: `cityB${index}`,
+                    value: legs[index]?.cityB || "",
+                    onChange: handleInputChange
+                  })
+                ),
+                React.createElement("br"),
+                React.createElement("label", null,
+                  "Cost of Leg ", index + 1, ":",
+                  React.createElement("input", {
+                    type: "number",
+                    name: `cost${index}`,
+                    value: legs[index]?.cost || "",
+                    onChange: handleInputChange
+                  })
+                ),
+                React.createElement("br")
+              )
+            )),
+            React.createElement("button", { type: "button", onClick: handleAddLeg }, "Add Leg"),
+            React.createElement("br"),
+            React.createElement("button", { type: "button", onClick: handleCreateRoute }, "Create Route"),
+            React.createElement("br"),
+            React.createElement("button", { type: "submit" }, "Calculate Total Cost")
+          ),
+
+          React.createElement("h2", null, "Routes:"),
+          routes.map((route, index) => (
+            React.createElement("div", { key: index },
+              React.createElement("p", null, "Route: ", route.route),
+              React.createElement("p", null, "Legs:"),
+              React.createElement("ul", null,
+                route.legs.map((leg, legIndex) => (
+                  React.createElement("li", { key: legIndex }, "City A: ", leg.cityA, ", City B: ", leg.cityB, ", Cost: ", leg.cost)
+                ))
+              ),
+              React.createElement("button", { type: "button", onClick: () => handleDeleteRoute(index) }, "Delete Route")
+            )
+          )),
+
+          React.createElement("h2", null, "Total Cost:"),
+          React.createElement("p", null, totalCost)
+        )
+      );
+    }
+
+    ReactDOM.render(React.createElement(NLegs), document.getElementById("root"));
+  </script>
+</body>
+</html>
